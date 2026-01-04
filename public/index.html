@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Library Book Management</title>
+</head>
+<body>
+
+<h2>Add Book</h2>
+<form id="addBookForm">
+  <input type="text" name="title" placeholder="Title" required><br><br>
+  <input type="text" name="author" placeholder="Author" required><br><br>
+  <input type="text" name="category" placeholder="Category" required><br><br>
+  <input type="number" name="publishedYear" placeholder="Year" required><br><br>
+  <input type="number" name="availableCopies" placeholder="Copies" required><br><br>
+  <button type="submit">Add Book</button>
+</form>
+
+<hr>
+
+<h2>Books List</h2>
+<button onclick="loadBooks()">Show All Books</button>
+<ul id="bookList"></ul>
+
+<h2>Update Copies</h2>
+<input id="uid" placeholder="Book ID">
+<input id="change" placeholder="+1 or -1">
+<button onclick="updateCopies()">Update</button>
+
+<h2>Delete Book</h2>
+<input id="did" placeholder="Book ID">
+<button onclick="deleteBook()">Delete</button>
+
+<script>
+const form = document.getElementById("addBookForm");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(form));
+  const res = await fetch("/add-book", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+  alert(await res.text());
+  form.reset();
+});
+
+async function loadBooks() {
+  const res = await fetch("/books");
+  const books = await res.json();
+  const list = document.getElementById("bookList");
+  list.innerHTML = "";
+  books.forEach(b => {
+    const li = document.createElement("li");
+    li.textContent = `${b._id} | ${b.title} - ${b.author} (${b.category}) | Copies: ${b.availableCopies}`;
+    list.appendChild(li);
+  });
+}
+
+async function updateCopies() {
+  const res = await fetch("/update-copies/" + document.getElementById("uid").value, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ change: Number(document.getElementById("change").value) })
+  });
+  alert(await res.text());
+}
+
+async function deleteBook() {
+  const res = await fetch("/delete-book/" + document.getElementById("did").value, {
+    method: "DELETE"
+  });
+  alert(await res.text());
+}
+</script>
+
+</body>
+</html>
